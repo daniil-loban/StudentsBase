@@ -76,7 +76,6 @@
       <DependentUpon>App.xaml</DependentUpon>
       <SubType>Code</SubType>
     </Compile>
-    <Compile Include="Models\Helpers\FileIO.cs" />
     <Compile Include="Models\Helpers\FullyObservableCollection.cs" />
     <Compile Include="Models\Students.cs" />
     <Compile Include="ViewModels\MainWindowViewModel.cs" />

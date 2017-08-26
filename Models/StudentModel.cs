@@ -54,6 +54,12 @@ namespace StudentsBase.Models {
         }        
         */
         [XmlIgnore]
+        public bool IsSelected {
+            get { return GetValue<bool>(IsSelectedProperty); }
+            set { SetValue(IsSelectedProperty, value); }
+        }
+
+        [XmlIgnore]
         public string FullName {
             get { return GetValue<string>(FirstNameProperty) + " " + GetValue<string>(LastProperty); }
         }
@@ -70,6 +76,8 @@ namespace StudentsBase.Models {
         public static readonly PropertyData AgeProperty = RegisterProperty("Age", typeof(int), 0);
         [XmlIgnore]
         public static readonly PropertyData GenderInt32Property = RegisterProperty("GenderInt32", typeof(int), 0);
+        [XmlIgnore]
+        public static readonly PropertyData IsSelectedProperty = RegisterProperty("IsSelected", typeof(bool), false);
 
 
     }

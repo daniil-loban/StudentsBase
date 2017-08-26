@@ -12,13 +12,13 @@ using System.Windows;
 
 using StudentsBase.Models;
 using StudentsBase.Models.Helpers;
+using System.Collections.ObjectModel;
 
 namespace StudentsBase.ViewModels {
     class MainWindowViewModel : ViewModelBase {
 
         public override string Title { get { return "Students database"; } }
 
-        public static readonly PropertyData StudentsListProperty = RegisterProperty("StudentsList", typeof(FullyObservableCollection<StudentModel>), null);
 
         public FullyObservableCollection<StudentModel> StudentsList {
             get { return GetValue<FullyObservableCollection<StudentModel>>(StudentsListProperty); }
@@ -26,6 +26,8 @@ namespace StudentsBase.ViewModels {
                 SetValue(StudentsListProperty, value);
             }
         }
+        public static readonly PropertyData StudentsListProperty = RegisterProperty("StudentsList", typeof(FullyObservableCollection < StudentModel>), null);
+
 
         public Command FileNew      { get; private set; }
         public Command FileOpen     { get; private set; }
@@ -48,6 +50,8 @@ namespace StudentsBase.ViewModels {
             EditAdd     = new Command(OnEditAddExecute, OnEditAddCanExecute);
             EditChange  = new Command(OnEditChangeExecute, OnEditChangeCanExecute);
             EditDelete  = new Command(OnEditDeleteExecute, OnEditDeleteCanExecute);
+
+            
             OnFileOpenExecute();
         }
 
@@ -95,6 +99,9 @@ namespace StudentsBase.ViewModels {
         private void OnEditChangeExecute() => MessageBox.Show("Edit Change");
 
         private bool OnEditDeleteCanExecute() => StudentsList.Count > 0;
-        private void OnEditDeleteExecute() => MessageBox.Show("Edit Delete");
+        private void OnEditDeleteExecute() {
+
+           MessageBox.Show("Edit Delete" + ((ObservableCollection<StudentModel>)StudentsList).Where<StudentModel>(x => x.IsSelected==true).Count());
+        }
     }
 }
