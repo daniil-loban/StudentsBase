@@ -9,13 +9,29 @@ namespace StudentsBase.Models {
     using Catel.Data;
     using Catel.Runtime.Serialization;
     using StudentsBase.Models.Helpers;
+    using System.ComponentModel;
     using System.Windows;
     using System.Xml.Serialization;
-
+    
     [ValidateModel(typeof(StudentValidator))]
     public class StudentModel : ValidatableModelBase {
 
-        public enum GENDER_TYPE { MALE, FEMALE }
+        public StudentModel() {
+
+        }
+
+        public  StudentModel(StudentModel previous) {
+            FirstName   = previous.FirstName;
+            Last        = previous.Last;
+            Age         = previous.Age;
+            GenderInt32 = previous.GenderInt32;
+            Id          = previous.Id;
+        }
+
+
+        public enum GENDER_TYPE {
+            MALE,
+            FEMALE }
 
         [XmlAttribute("Id")]
         public int Id {
@@ -26,13 +42,13 @@ namespace StudentsBase.Models {
         [XmlElement("FirstName")]
         public string FirstName {
             get { return GetValue<string>(FirstNameProperty); }
-            set { SetValue(FirstNameProperty, value); }
+            set { SetValue(FirstNameProperty, value); SetValue(FullNameProperty, value); }
         }
 
         [XmlElement("Last")]
         public string Last {
             get { return GetValue<string>(LastProperty); }
-            set { SetValue(LastProperty, value); }
+            set { SetValue(LastProperty, value); SetValue(FullNameProperty, value); }
         }
 
         [XmlElement("Age")]
@@ -46,13 +62,13 @@ namespace StudentsBase.Models {
             get { return GetValue<int>(GenderInt32Property); }
             set { SetValue(GenderInt32Property, value); }
         }
-        /*
+        
         [XmlIgnore]
         public GENDER_TYPE Gender {
             get { return GetValue<GENDER_TYPE>(GenderInt32Property); }
             set { SetValue(GenderInt32Property, (int)value); }
         }        
-        */
+        
         [XmlIgnore]
         public bool IsSelected {
             get { return GetValue<bool>(IsSelectedProperty); }
@@ -61,7 +77,8 @@ namespace StudentsBase.Models {
 
         [XmlIgnore]
         public string FullName {
-            get { return GetValue<string>(FirstNameProperty) + " " + GetValue<string>(LastProperty); }
+            get { return GetValue<string>(FirstNameProperty) + " "  + GetValue<string>(LastProperty); }
+            set { SetValue(FullNameProperty, value); }
         }
 
         [XmlIgnore]

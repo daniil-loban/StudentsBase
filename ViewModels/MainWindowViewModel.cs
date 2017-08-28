@@ -13,6 +13,8 @@ using System.Windows;
 using StudentsBase.Models;
 using StudentsBase.Models.Helpers;
 using System.Collections.ObjectModel;
+using Catel.IoC;
+using Catel.Services;
 
 namespace StudentsBase.ViewModels {
     class MainWindowViewModel : ViewModelBase {
@@ -24,21 +26,23 @@ namespace StudentsBase.ViewModels {
             get { return GetValue<FullyObservableCollection<StudentModel>>(StudentsListProperty); }
             private set {
                 SetValue(StudentsListProperty, value);
+
             }
         }
-        public static readonly PropertyData StudentsListProperty = RegisterProperty("StudentsList", typeof(FullyObservableCollection < StudentModel>), null);
+
+        public static readonly PropertyData StudentsListProperty =
+            RegisterProperty("StudentsList", typeof(FullyObservableCollection<StudentModel>), null);
 
 
-        public Command FileNew      { get; private set; }
-        public Command FileOpen     { get; private set; }
-        public Command FileClose    { get; private set; }
-        public Command FileSave     { get; private set; }
-        public Command FileSaveAs   { get; private set; }
-        public Command FileExit     { get; private set; }
-        public Command EditAdd      { get; private set; }
-        public Command EditChange   { get; private set; }
+        public Command FileNew { get; private set; }
+        public Command FileOpen { get; private set; }
+        public Command FileClose { get; private set; }
+        public Command FileSave { get; private set; }
+        public Command FileSaveAs { get; private set; }
+        public Command FileExit { get; private set; }
+        public TaskCommand EditAdd { get; private set; }
+        public TaskCommand EditChange { get; private set; }
         public Command EditDelete   { get; private set; }
-        
 
         public MainWindowViewModel() {
             FileNew     = new Command(OnFileNewExecute, OnFileNewCanExecute);
@@ -47,13 +51,29 @@ namespace StudentsBase.ViewModels {
             FileSave    = new Command(OnFileSaveExecute, OnFileSaveCanExecute);
             FileSaveAs  = new Command(OnFileSaveAsExecute, OnFileSaveAsCanExecute);
             FileExit    = new Command(OnFileExitExecute, OnFileExitCanExecute);
-            EditAdd     = new Command(OnEditAddExecute, OnEditAddCanExecute);
-            EditChange  = new Command(OnEditChangeExecute, OnEditChangeCanExecute);
+            EditAdd     = new TaskCommand(OnEditAddExecute, OnEditAddCanExecute);
+            EditChange  = new TaskCommand(OnEditChangeExecuteAsync, OnEditChangeCanExecute);
             EditDelete  = new Command(OnEditDeleteExecute, OnEditDeleteCanExecute);
-
             
             OnFileOpenExecute();
         }
+
+        public StudentModel SelectedStudent {
+            get {
+                return GetValue<StudentModel>(SelectedStudentProperty);
+            }
+            set {
+
+                SetValue(SelectedStudentProperty, value);
+
+                EditChange = new TaskCommand(OnEditChangeExecuteAsync, OnEditChangeCanExecute);
+                EditDelete = new Command(OnEditDeleteExecute, OnEditDeleteCanExecute);
+            }
+        }
+
+        public static readonly PropertyData SelectedStudentProperty =
+        RegisterProperty("SelectedStudent", typeof(StudentModel), null);
+
 
         private bool OnFileNewCanExecute() => true;
         private void OnFileNewExecute() => MessageBox.Show("File New");
@@ -83,25 +103,72 @@ namespace StudentsBase.ViewModels {
         private void OnFileExitExecute() => MessageBox.Show("File Exit");
 
         private bool OnEditAddCanExecute() => true;
-        private void OnEditAddExecute() {
-            StudentModel sm = new StudentModel() {  Age = 16,
-                                                    FirstName = "fdsfds",
-                                                    Last = "dfsfdf",
-                                                    Id = StudentsList.Last<StudentModel>().Id+1 ,
-                                                    GenderInt32 = 0 };
-            if (sm.HasErrors)
-                MessageBox.Show(sm.GetErrorMessage());
-            else
-                StudentsList.Add(sm);
+        private async Task OnEditAddExecute() {
+
+            int? NextId = null;
+            if (StudentsList.Count > 0)
+                NextId = StudentsList.Last().Id +1 ;
+
+            StudentModel student = new StudentModel() {  Id=(NextId ?? 0) };
+            var viewModel = new EditRecordViewModel("New Record", student);
+
+            var dependencyResolver = this.GetDependencyResolver();
+            var uiVisualizerService = dependencyResolver.Resolve<IUIVisualizerService>();
+
+            if (await uiVisualizerService.ShowDialogAsync(viewModel) ?? false) {
+                if (!viewModel.Student.HasErrors) {
+                    StudentsList.Add(viewModel.Student);
+                }
+            }
+
         }
 
-        private bool OnEditChangeCanExecute() => StudentsList.Count > 0;
-        private void OnEditChangeExecute() => MessageBox.Show("Edit Change");
+        private bool OnEditChangeCanExecute() {
 
-        private bool OnEditDeleteCanExecute() => StudentsList.Count > 0;
-        private void OnEditDeleteExecute() {
+            return (SelectedStudent != null);
+        }
 
-           MessageBox.Show("Edit Delete" + ((ObservableCollection<StudentModel>)StudentsList).Where<StudentModel>(x => x.IsSelected==true).Count());
+        private int CountSelection() {
+            return (StudentsList).Where(x => x.IsSelected == true).Count();
+        }
+
+        private async Task OnEditChangeExecuteAsync() {
+
+            StudentModel currentStudent = StudentsList.Where<StudentModel>(x => x.IsSelected == true).First<StudentModel>();
+
+            if (currentStudent == null)
+                return;
+
+            StudentModel student = new StudentModel(currentStudent);
+
+            var viewModel = new EditRecordViewModel("Change Record", student);
+
+            var dependencyResolver = this.GetDependencyResolver();
+            var uiVisualizerService = dependencyResolver.Resolve<IUIVisualizerService>();
+            
+            if (await uiVisualizerService.ShowDialogAsync(viewModel) ?? false) {
+                if (!viewModel.Student.HasErrors) {
+
+                    currentStudent.FirstName = viewModel.Student.FirstName;
+                    currentStudent.Last = viewModel.Student.Last;
+                    currentStudent.Age = viewModel.Student.Age;
+                    currentStudent.GenderInt32 = viewModel.Student.GenderInt32;
+                }
+            }
+        }
+
+
+        private bool OnEditDeleteCanExecute() => CountSelection()>0;
+        private void  OnEditDeleteExecute() {
+
+            if (MessageBox.Show("Do you want remove " + CountSelection() + " record(s)?"
+                , "Confirmation", MessageBoxButton.OKCancel) == MessageBoxResult.OK) {
+                for (int i = StudentsList.Count - 1; i >= 0; i--) {
+                    if ((StudentsList[i].IsSelected == true)) {
+                        StudentsList.RemoveAt(i);
+                    }
+                }
+            }
         }
     }
 }

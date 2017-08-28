@@ -7,8 +7,7 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:converters="clr-namespace:StudentsBase.ViewModels.Converters"
         mc:Ignorable="d"
-        xmlns:interactivity="using:Microsoft.Xaml.Interactivity"  
-        xmlns:core="using:Microsoft.Xaml.Interactions.Core"  
+        xmlns:i="http://schemas.microsoft.com/expression/2010/interactivity" 
         Title="{Binding  Path=Title}" Height="350" Width="525">
     <Window.Resources>
         <converters:GenderToStringConverter x:Key="genderToStringConverter" />
@@ -32,8 +31,13 @@
                 </Trigger>
             </Style.Triggers>
         </Style>
-
+        
+        <Style TargetType="{x:Type ListBoxItem}" x:Key="OneRecordListBoxTemplate">
+            <Setter Property="IsSelected" Value="{Binding IsSelected, Mode=TwoWay}" />
+        </Style>
+    
     </Window.Resources>
+
     <Grid>
         <Grid.ColumnDefinitions>
             <ColumnDefinition Width="2*" MinWidth="400" />
@@ -61,24 +65,24 @@
                 <Separator></Separator>
                 <MenuItem Header="Delete" Command="{Binding Path=EditDelete}"/>
             </MenuItem>
+            
         </Menu>
         <ListBox Grid.Row="1"  AlternationCount="2"
                  ItemContainerStyle="{StaticResource ListBoxItemTemplate}" 
                  ItemsSource="{Binding Path=StudentsList, UpdateSourceTrigger=PropertyChanged }" 
+                 SelectedItem="{Binding SelectedStudent}"
                  SelectionMode="Extended">
             <ListBox.ItemTemplate>
                 <DataTemplate>
                     <StackPanel>
                         <StackPanel Orientation="Horizontal">
-                            <TextBlock Text="{Binding Path=FullName}" Width="200"/>
-                            <TextBlock Text="{Binding Path=GenderInt32, Converter={StaticResource genderToStringConverter} }"/>
+                            <TextBlock Text="{Binding Path=FullName,UpdateSourceTrigger=PropertyChanged}" Width="200"/>
+                            <TextBlock Text="{Binding Path=GenderInt32,UpdateSourceTrigger=PropertyChanged, Converter={StaticResource genderToStringConverter} }"/>
                             <TextBlock Text=" / "/>
-                            <TextBlock Text="{Binding Path=Age, Converter={StaticResource ageToStringConverter} }" Width="50"/>
-                            
+                            <TextBlock Text="{Binding Path=Age,UpdateSourceTrigger=PropertyChanged, Converter={StaticResource ageToStringConverter} }" Width="50"/>
                           </StackPanel>
                     </StackPanel>
                 </DataTemplate>
-
             </ListBox.ItemTemplate>
             <ListBox.Style>
                 <Style TargetType="{x:Type ListBox}">
@@ -96,5 +100,4 @@
         <GridSplitter Grid.Column="1" Grid.Row="1" Width="5" HorizontalAlignment="Stretch" />
         <TextBlock Grid.Column="2" Grid.Row="1" FontSize="55" HorizontalAlignment="Center" VerticalAlignment="Center" TextWrapping="Wrap">Right side</TextBlock>
     </Grid>
-
 </catel:Window>

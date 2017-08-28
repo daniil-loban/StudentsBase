@@ -1,0 +1,72 @@
+﻿<catel:DataWindow
+        xmlns:catel="http://schemas.catelproject.com"    
+        x:Class="StudentsBase.Views.EditRecordView"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:local="clr-namespace:StudentsBase.Views"
+        xmlns:gs="clr-namespace:StudentsBase.ViewModels.Extensions"
+        xmlns:converters="clr-namespace:StudentsBase.ViewModels.Converters"
+        
+        mc:Ignorable="d"
+        Title="{Binding  Path=Title}"
+        Height="200" Width="300">
+    <Window.Resources>
+        <converters:GenderToStringConverter x:Key="genderToStringConverter" />
+        <Style x:Key="ErrorStyle" TargetType="TextBlock">
+            <Setter Property="Foreground" Value="White"/>
+            <Setter Property="Background" Value="Red"/>
+            <Setter Property="HorizontalAlignment" Value="Right"/>
+        </Style>
+        
+        <ControlTemplate x:Key="errorTemplate">
+            <Border BorderBrush="Red" BorderThickness="2" ToolTip="{Binding [0].ErrorContent}">
+                <Grid>
+                    <AdornedElementPlaceholder x:Name="_el" />
+                    <Image Height="16" Width="16" HorizontalAlignment="Right" Source="/StudentsBase;component/Resources/error.png"/>
+                </Grid>
+            </Border>
+        </ControlTemplate>
+
+        <Style TargetType="{x:Type TextBox}">
+            <Setter Property="Validation.ErrorTemplate" Value="{StaticResource errorTemplate}"/>
+            <Setter Property="gs:TextBoxExtensions.IsDirtyEnabled" Value="True" />
+            <Style.Triggers>
+                <Trigger Property="gs:TextBoxExtensions.ShowErrorTemplate" Value="false">
+                    <Setter Property="Validation.ErrorTemplate" Value="{x:Null}"/>
+                </Trigger>
+            </Style.Triggers>
+        </Style>
+
+    </Window.Resources>
+    <Grid>
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="1*"/>
+            <ColumnDefinition Width="2*" />
+        </Grid.ColumnDefinitions>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="20*"/>
+            <RowDefinition Height="20*"/>
+            <RowDefinition Height="20*"/>
+            <RowDefinition Height="20*"/>
+            <RowDefinition Height="20*"/>
+        </Grid.RowDefinitions>
+        
+        <TextBlock Text="First name:" VerticalAlignment="Center"  Margin="5"></TextBlock>
+        <TextBox  Grid.Column="1" Margin="5" Text="{Binding Path=Student.FirstName}"></TextBox>
+        <TextBlock Text="Last name:" VerticalAlignment="Center" Grid.Row="1" Margin="5"></TextBlock>
+        <TextBox Grid.Row="1" Grid.Column="1" Margin="5" Text="{Binding Path=Student.Last}" ></TextBox>
+        <TextBlock Text="Age:" VerticalAlignment="Center" Grid.Row="2" Margin="5"></TextBlock>
+        <TextBox Grid.Row="2" Grid.Column="1" Margin="5" Text="{Binding Path=Student.Age}"></TextBox>
+
+        <TextBlock Text="Gender:"  Grid.Row="3" VerticalAlignment="Center" Margin="5" ></TextBlock>
+        <ComboBox Grid.Column="2" Grid.Row="3" Margin="5" 
+                  ItemsSource="{Binding Path=GenderTypes}"
+                  SelectedIndex="{Binding Path=Student.GenderInt32}"
+                  ></ComboBox>
+        <!--
+        <catel:WarningAndErrorValidator Source="{Binding Student}" Visibility="{Binding Path=Student.HasErrors}" />
+        -->
+    </Grid>
+</catel:DataWindow>
